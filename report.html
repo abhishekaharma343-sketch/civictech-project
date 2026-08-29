@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Report an Issue - Civic Pulse</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <!-- Leaflet CSS (Free Map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; color: #1a1a2e; min-height: 100vh; }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .category-btn.selected {
+            border-color: #2d6a4f;
+            background: #edf7f0;
+        }
+        .category-btn.selected .cat-icon { color: #2d6a4f; }
+        .category-btn.selected .cat-label { color: #0f5238; font-weight: 600; }
+
+        /* Map */
+        #map {
+            height: 280px;
+            width: 100%;
+            border-radius: 12px;
+            background: #e5e7eb;
+        }
+
+        /* Photo Preview */
+        .photo-preview {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: Inter, sans-serif;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            max-width: 90%;
+        }
+        .toast.show { opacity: 1; }
+        .toast.success { background: #2d6a4f; }
+        .toast.error { background: #ba1a1a; }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 2px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-badge.pending { background: #F94144; color: white; }
+
+        /* Spinner */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2d6a4f;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .btn-pulse {
+            animation: pulse-subtle 3s infinite ease-in-out;
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(45, 106, 79, 0.2); }
+            50% { transform: scale(1.02); box-shadow: 0 8px 24px rgba(45, 106, 79, 0.3); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Header -->
+<header class="bg-white sticky top-0 z-50 flex items-center px-5 py-4 w-full shadow-sm border-b border-gray-200/50">
+    <a href="index.html" class="mr-4 p-2 rounded-full hover:bg-gray-100 transition-colors">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h1 class="text-xl font-bold text-[#0f5238] flex-1">📝 Report Issue</h1>
+    <button id="darkToggle" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+        <span class="material-symbols-outlined text-[#2d6a4f]">dark_mode</span>
+    </button>
+</header>
+
+<!-- Main Content -->
+<main class="px-5 py-4 flex flex-col gap-5 pb-32">
+
+    <!-- ======================================== -->
+    <!-- 1. CATEGORY                              -->
+    <!-- ======================================== -->
+    <section>
+        <h2 class="font-semibold text-lg text-[#191c1d] mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#2d6a4f]">grid_view</span>
+            Category
+        </h2>
+        <div class="grid grid-cols-3 gap-2" id="categoryGrid">
+            <button class="category-btn selected flex flex-col items-center justify-center p-3 rounded-xl border-2 border-[#2d6a4f] bg-[#edf7f0] shadow-sm transition-all active:scale-95" data-category="pothole">
+                <span class="material-symbols-outlined cat-icon text-[#2d6a4f] filled mb-1 text-3xl">trip_origin</span>
+                <span class="cat-label font-semibold text-sm text-[#0f5238]">Pothole</span>
+            </button>
+            <button class="category-btn flex flex-col items-center justify-center p-3 rounded-xl border border-gray-300 bg-white shadow-sm transition-all active:scale-95 hover:bg-gray-50" data-category="garbage">
+                <span class="material-symbols-outlined cat-icon mb-1 text-3xl text-gray-600">delete</span>
+                <span class="cat-label text-sm text-gray-600">Garbage</span>
+            </button>
+            <button class="category-btn flex flex-col items-center justify-center p-3 rounded-xl border border-gray-300 bg-white shadow-sm transition-all active:scale-95 hover:bg-gray-50" data-category="streetlight">
+                <span class="material-symbols-outlined cat-icon mb-1 text-3xl text-gray-600">lightbulb</span>
+                <span class="cat-label text-sm text-gray-600">Streetlight</span>
+            </button>
+            <button class="category-btn flex flex-col items-center justify-center p-3 rounded-xl border border-gray-300 bg-white shadow-sm transition-all active:scale-95 hover:bg-gray-50" data-category="drainage">
+                <span class="material-symbols-outlined cat-icon mb-1 text-3xl text-gray-600">water_drop</span>
+                <span class="cat-label text-sm text-gray-600">Drainage</span>
+            </button>
+            <button class="category-btn flex flex-col items-center justify-center p-3 rounded-xl border border-gray-300 bg-white shadow-sm transition-all active:scale-95 hover:bg-gray-50" data-category="road">
+                <span class="material-symbols-outlined cat-icon mb-1 text-3xl text-gray-600">add_road</span>
+                <span class="cat-label text-sm text-gray-600">Road</span>
+            </button>
+            <button class="category-btn flex flex-col items-center justify-center p-3 rounded-xl border border-gray-300 bg-white shadow-sm transition-all active:scale-95 hover:bg-gray-50" data-category="other">
+                <span class="material-symbols-outlined cat-icon mb-1 text-3xl text-gray-600">more_horiz</span>
+                <span class="cat-label text-sm text-gray-600">Other</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ======================================== -->
+    <!-- 2. PHOTO + LOCATION (No Google Maps)    -->
+    <!-- ======================================== -->
+    <section>
+        <h2 class="font-semibold text-lg text-[#191c1d] mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#2d6a4f]">photo_camera</span>
+            Photo & Location
+        </h2>
+
+        <!-- Photo Upload -->
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+            <button id="photoUploadBtn" class="w-full h-32 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:border-[#2d6a4f] active:scale-[0.98]">
+                <span class="material-symbols-outlined mb-2 text-4xl">photo_camera</span>
+                <span class="text-sm" id="photoLabel">📸 Tap to take photo</span>
+            </button>
+            <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden">
+            
+            <div id="photoPreviewContainer" class="hidden mt-2">
+                <img id="photoPreview" class="photo-preview" alt="Preview">
+                <button id="removePhotoBtn" class="text-sm text-red-500 mt-1 hover:underline flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">delete</span> Remove photo
+                </button>
+            </div>
+        </div>
+
+        <!-- Location with Leaflet Map (Free) -->
+        <div class="mt-3 bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
+            <div id="locationStatus" class="p-4 flex items-center justify-between bg-gray-50 border-b border-gray-200">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#2d6a4f]">location_searching</span>
+                    <span class="text-sm font-medium" id="locationText">📍 Click "Get Location"</span>
+                </div>
+                <button id="getLocationBtn" class="bg-[#2d6a4f] text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-[#0f5238] transition-colors">
+                    📍 Get Location
+                </button>
+            </div>
+
+            <!-- Map -->
+            <div id="mapContainer">
+                <div id="mapLoading" style="display:flex; align-items:center; justify-content:center; height:280px; background:#f8f9fa; flex-direction:column; gap:12px;">
+                    <div class="spinner"></div>
+                    <p class="text-sm text-gray-600">Loading map...</p>
+                </div>
+                <div id="map" style="height:280px; width:100%; display:none;"></div>
+            </div>
+
+            <!-- Location Details -->
+            <div class="p-4 bg-white border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold text-[#191c1d]" id="locationAddress">
+                            <span class="text-gray-400">📍 No location set</span>
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1" id="coordinatesDisplay">
+                            Latitude: -- | Longitude: --
+                        </p>
+                    </div>
+                    <span id="locationAccuracy" class="text-xs text-gray-400"></span>
+                </div>
+            </div>
+
+            <input type="hidden" id="latitude" value="">
+            <input type="hidden" id="longitude" value="">
+            <input type="hidden" id="address" value="">
+        </div>
+    </section>
+
+    <!-- ======================================== -->
+    <!-- 3. DESCRIPTION                          -->
+    <!-- ======================================== -->
+    <section>
+        <div class="flex justify-between items-center mb-3">
+            <h2 class="font-semibold text-lg text-[#191c1d] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#2d6a4f]">description</span>
+                Description
+            </h2>
+            <span id="priorityTag" class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full border border-yellow-300 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">priority_high</span>
+                <span id="priorityText">Medium Priority</span>
+            </span>
+        </div>
+        <textarea id="descriptionInput" class="w-full rounded-xl border border-gray-300 bg-white p-4 text-sm text-[#191c1d] placeholder:text-gray-400 focus:border-[#2d6a4f] focus:ring-1 focus:ring-[#2d6a4f] transition-colors resize-none h-32" placeholder="Describe the issue... (e.g., Deep pothole in the right lane, approx 2ft wide)"></textarea>
+    </section>
+
+</main>
+
+<!-- Submit Button -->
+<div class="fixed bottom-0 left-0 w-full p-5 bg-white/90 backdrop-blur-md border-t border-gray-200 z-50">
+    <button id="submitBtn" class="w-full h-[56px] bg-[#2d6a4f] text-white rounded-xl font-semibold text-lg shadow-lg btn-pulse flex items-center justify-center gap-2 transition-transform active:scale-95 hover:bg-[#0f5238]">
+        <span class="material-symbols-outlined">send</span>
+        Submit Report
+    </button>
+</div>
+
+<!-- ========================================== -->
+<!-- LEaFLET JS (Free Map)                     -->
+<!-- ========================================== -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- ========================================== -->
+<!-- JAVASCRIPT                                -->
+<!-- ========================================== -->
+<script>
+    // ============================================
+    // GLOBAL VARIABLES
+    // ============================================
+    let map, marker;
+    let currentPosition = null;
+    let mapInitialized = false;
+    let photoFile = null;
+    let selectedCategory = 'pothole';
+    let toastTimeout = null;
+    let isDark = localStorage.getItem('darkMode') === 'enabled';
+
+    // ============================================
+    // CATEGORY SELECTION
+    // ============================================
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.category-btn').forEach(b => {
+                b.classList.remove('selected');
+                b.style.borderColor = '';
+                b.style.background = '';
+            });
+            this.classList.add('selected');
+            this.style.borderColor = '#2d6a4f';
+            this.style.background = '#edf7f0';
+            selectedCategory = this.dataset.category;
+            updatePriority(selectedCategory);
+        });
+    });
+
+    // ============================================
+    // PRIORITY
+    // ============================================
+    function updatePriority(category) {
+        const priorities = {
+            'pothole': { text: 'High Priority', color: '#F94144' },
+            'garbage': { text: 'Medium Priority', color: '#F9C74F' },
+            'streetlight': { text: 'Medium Priority', color: '#F9C74F' },
+            'drainage': { text: 'High Priority', color: '#F94144' },
+            'road': { text: 'High Priority', color: '#F94144' },
+            'other': { text: 'Low Priority', color: '#52B788' }
+        };
+        const p = priorities[category] || priorities['other'];
+        document.getElementById('priorityText').textContent = p.text;
+        const tag = document.getElementById('priorityTag');
+        tag.style.background = p.color + '20';
+        tag.style.color = p.color;
+        tag.style.borderColor = p.color + '40';
+    }
+
+    // ============================================
+    // PHOTO UPLOAD
+    // ============================================
+    document.getElementById('photoUploadBtn').addEventListener('click', () => {
+        document.getElementById('photoInput').click();
+    });
+
+    document.getElementById('photoInput').addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            photoFile = this.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('photoPreview').src = event.target.result;
+                document.getElementById('photoPreviewContainer').classList.remove('hidden');
+                document.getElementById('photoLabel').textContent = '📷 ' + photoFile.name;
+                showToast('📸 Photo attached!', 'success');
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    document.getElementById('removePhotoBtn').addEventListener('click', function() {
+        photoFile = null;
+        document.getElementById('photoInput').value = '';
+        document.getElementById('photoPreviewContainer').classList.add('hidden');
+        document.getElementById('photoLabel').textContent = '📸 Tap to take photo';
+        showToast('Photo removed', 'error');
+    });
+
+    // ============================================
+    // LEaFLET MAP (FREE - No Google API Key)
+    // ============================================
+    function initMap() {
+        try {
+            const defaultCenter = [28.6139, 77.2090];
+            
+            document.getElementById('mapLoading').style.display = 'none';
+            document.getElementById('map').style.display = 'block';
+            
+            map = L.map('map').setView(defaultCenter, 15);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            marker = L.marker(defaultCenter, { draggable: true })
+                .addTo(map)
+                .bindPopup('📍 Drag to adjust location')
+                .openPopup();
+            
+            marker.on('dragend', function() {
+                const pos = marker.getLatLng();
+                currentPosition = { lat: pos.lat, lng: pos.lng };
+                updateLocationDisplay(currentPosition.lat, currentPosition.lng);
+                getAddressFromCoords(currentPosition.lat, currentPosition.lng);
+            });
+            
+            map.on('click', function(e) {
+                const pos = e.latlng;
+                marker.setLatLng(pos);
+                currentPosition = { lat: pos.lat, lng: pos.lng };
+                updateLocationDisplay(pos.lat, pos.lng);
+                getAddressFromCoords(pos.lat, pos.lng);
+            });
+            
+            mapInitialized = true;
+            
+            // Try to get location
+            getCurrentLocation();
+            
+            console.log('✅ Leaflet map initialized (Free!)');
+            
+        } catch (error) {
+            console.error('Map error:', error);
+            document.getElementById('mapLoading').innerHTML = `
+                <div class="text-center p-4">
+                    <span class="material-symbols-outlined text-4xl text-red-500">error</span>
+                    <p class="text-sm text-gray-600 mt-2">Map failed to load</p>
+                    <button onclick="location.reload()" class="mt-3 bg-[#2d6a4f] text-white px-4 py-2 rounded-lg text-sm">🔄 Retry</button>
+                </div>
+            `;
+        }
+    }
+
+    // ============================================
+    // GET CURRENT LOCATION (GPS)
+    // ============================================
+    function getCurrentLocation() {
+        if (!navigator.geolocation) {
+            document.getElementById('locationText').textContent = '⚠️ GPS not supported';
+            return;
+        }
+        
+        document.getElementById('locationText').textContent = '📍 Getting location...';
+        document.getElementById('locationText').style.color = '#F9C74F';
+        
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                
+                currentPosition = { lat: lat, lng: lng };
+                
+                if (mapInitialized) {
+                    map.setView([lat, lng], 16);
+                    marker.setLatLng([lat, lng]);
+                }
+                
+                document.getElementById('locationText').textContent = '📍 Location found!';
+                document.getElementById('locationText').style.color = '#2d6a4f';
+                document.getElementById('locationAccuracy').textContent = `±${Math.round(accuracy)}m accuracy`;
+                
+                updateLocationDisplay(lat, lng);
+                getAddressFromCoords(lat, lng);
+                
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+                
+                showToast('📍 Location found!', 'success');
+            },
+            function(error) {
+                console.warn('Location error:', error.message);
+                document.getElementById('locationText').textContent = '⚠️ ' + error.message;
+                document.getElementById('locationText').style.color = '#F94144';
+                showToast('⚠️ Could not get location. Drag the pin.', 'error');
+            },
+            { enableHighAccuracy: true, timeout: 15000 }
+        );
+    }
+
+    // ============================================
+    // GET ADDRESS FROM COORDINATES (Free API)
+    // ============================================
+    function getAddressFromCoords(lat, lng) {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    const address = data.display_name;
+                    document.getElementById('address').value = address;
+                    document.getElementById('locationAddress').innerHTML = `📍 ${address}`;
+                    document.getElementById('locationAddress').className = 'text-sm font-semibold text-[#191c1d]';
+                }
+            })
+            .catch(() => {
+                document.getElementById('locationAddress').innerHTML = '<span class="text-gray-400">📍 Address not found</span>';
+            });
+    }
+
+    // ============================================
+    // UPDATE LOCATION DISPLAY
+    // ============================================
+    function updateLocationDisplay(lat, lng) {
+        document.getElementById('coordinatesDisplay').textContent = `Lat: ${lat.toFixed(6)} | Lng: ${lng.toFixed(6)}`;
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lng;
+    }
+
+    // ============================================
+    // SUBMIT REPORT
+    // ============================================
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        const description = document.getElementById('descriptionInput').value.trim();
+        const lat = document.getElementById('latitude').value;
+        const lng = document.getElementById('longitude').value;
+        const address = document.getElementById('address').value;
+        
+        if (!description) {
+            showToast('⚠️ Please describe the issue', 'error');
+            document.getElementById('descriptionInput').focus();
+            return;
+        }
+        
+        if (!lat || !lng) {
+            showToast('⚠️ Please set your location on the map', 'error');
+            document.getElementById('getLocationBtn').click();
+            return;
+        }
+        
+        this.innerHTML = '<span class="spinner" style="width:24px;height:24px;"></span> Submitting...';
+        this.disabled = true;
+        
+        setTimeout(() => {
+            const reportData = {
+                id: 'CR-' + Date.now().toString().slice(-6),
+                category: selectedCategory,
+                description: description,
+                latitude: parseFloat(lat),
+                longitude: parseFloat(lng),
+                address: address || 'Unknown location',
+                photo: photoFile ? {
+                    name: photoFile.name,
+                    type: photoFile.type,
+                    size: photoFile.size
+                } : null,
+                timestamp: new Date().toISOString(),
+                status: 'Pending'
+            };
+            
+            let reports = [];
+            try {
+                reports = JSON.parse(localStorage.getItem('civicReports')) || [];
+            } catch(e) { reports = []; }
+            
+            reports.push(reportData);
+            localStorage.setItem('civicReports', JSON.stringify(reports));
+            
+            showToast('✅ Report submitted with photo & location!', 'success');
+            this.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Submitted!';
+            this.style.background = '#52B788';
+            
+            setTimeout(() => {
+                window.location.href = 'success.html';
+            }, 1500);
+        }, 1500);
+    });
+
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
+    document.getElementById('getLocationBtn').addEventListener('click', getCurrentLocation);
+
+    // ============================================
+    // DARK MODE
+    // ============================================
+    function applyDarkMode() {
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.body.style.background = '#0f0f1a';
+            document.getElementById('darkToggle').innerHTML = '<span class="material-symbols-outlined">light_mode</span>';
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.body.style.background = '#f0f2f5';
+            document.getElementById('darkToggle').innerHTML = '<span class="material-symbols-outlined">dark_mode</span>';
+        }
+    }
+
+    document.getElementById('darkToggle').addEventListener('click', function() {
+        isDark = !isDark;
+        localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+        applyDarkMode();
+        showToast(isDark ? '🌙 Dark mode enabled' : '☀️ Light mode enabled', 'success');
+    });
+
+    applyDarkMode();
+
+    // ============================================
+    // TOAST
+    // ============================================
+    function showToast(message, type) {
+        if (toastTimeout) clearTimeout(toastTimeout);
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast';
+        if (type === 'success') toast.classList.add('success');
+        if (type === 'error') toast.classList.add('error');
+        toast.classList.add('show');
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ============================================
+    // AUTO-SAVE DRAFT
+    // ============================================
+    document.getElementById('descriptionInput').addEventListener('input', function() {
+        localStorage.setItem('reportDraft', this.value);
+    });
+
+    const savedDraft = localStorage.getItem('reportDraft');
+    if (savedDraft) {
+        document.getElementById('descriptionInput').value = savedDraft;
+    }
+
+    // ============================================
+    // INIT
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        initMap();
+    });
+
+    console.log('✅ Civic Pulse - Report Page Loaded!');
+    console.log('📸 Photo upload ready');
+    console.log('📍 GPS location ready (Free - No Google API needed)');
+    console.log('🗺️ Using Leaflet + OpenStreetMap (Free!)');
+</script>
+
+</body>
+</html>

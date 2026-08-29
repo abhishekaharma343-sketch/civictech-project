@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Civic Pulse - Home</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-[#f8f9fa] text-[#191c1d] antialiased font-body-lg">
+
+<!-- Header -->
+<header class="bg-white sticky top-0 z-50 flex items-center justify-between px-5 py-4 w-full shadow-sm">
+    <h1 class="text-2xl font-bold text-[#0f5238]"> CIVIC TECH </h1>
+    <a href="profile.html" class="p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Profile">
+        <span class="material-symbols-outlined text-[#2d6a4f]">account_circle</span>
+    </a>
+</header>
+
+<!-- Main -->
+<main class="px-5 py-4 flex flex-col gap-6 pb-32">
+
+    <!-- Welcome -->
+    <div class="bg-[#2d6a4f] text-white rounded-2xl p-6">
+        <h2 class="text-xl font-bold">👋 Hello, Citizen!</h2>
+        <p class="text-[#a8e7c5] mt-1">Report issues in your neighborhood</p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-2 gap-4">
+        <a href="report.html" class="bg-white rounded-2xl p-6 shadow-sm text-center hover:shadow-md transition-all">
+            <span class="material-symbols-outlined text-4xl text-[#2d6a4f]">add_location</span>
+            <p class="font-semibold mt-2">Report Issue</p>
+        </a>
+        <a href="my-reports.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f]">
+    <span class="material-symbols-outlined">list_alt</span>
+    <span class="text-xs">My Reports</span>
+        </a>
+        <a href="#" class="bg-white rounded-2xl p-6 shadow-sm text-center hover:shadow-md transition-all">
+            <span class="material-symbols-outlined text-4xl text-[#2d6a4f]">notifications</span>
+            <p class="font-semibold mt-2">Notifications</p>
+        </a>
+        <a href="#" class="bg-white rounded-2xl p-6 shadow-sm text-center hover:shadow-md transition-all">
+            <span class="material-symbols-outlined text-4xl text-[#2d6a4f]">insights</span>
+            <p class="font-semibold mt-2">Dashboard</p>
+        </a>
+    </div>
+
+    <!-- Recent Issues -->
+    <div>
+        <h3 class="font-semibold text-lg mb-3">📋 Recent Issues Near You</h3>
+        <div class="space-y-3">
+            <a href="detail.html" class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3 hover:shadow-md transition-all">
+                <span class="material-symbols-outlined text-red-500 text-3xl">trip_origin</span>
+                <div class="flex-1">
+                    <p class="font-semibold">Deep pothole on MG Road</p>
+                    <p class="text-sm text-gray-500">📍 250m away • 2 hours ago</p>
+                    <span class="inline-block text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full mt-1">Pending</span>
+                </div>
+            </a>
+            <a href="detail.html" class="bg-white rounded-xl p-4 shadow-sm flex items-start gap-3 hover:shadow-md transition-all">
+                <span class="material-symbols-outlined text-yellow-500 text-3xl">delete</span>
+                <div class="flex-1">
+                    <p class="font-semibold">Garbage overflow at bus stop</p>
+                    <p class="text-sm text-gray-500">📍 500m away • 5 hours ago</p>
+                    <span class="inline-block text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full mt-1">In Progress</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</main>
+
+<!-- Bottom Navigation -->
+<div class="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-200 z-50">
+    <div class="flex justify-around py-2">
+        <a href="index.html" class="flex flex-col items-center text-[#2d6a4f]">
+            <span class="material-symbols-outlined filled">home</span>
+            <span class="text-xs">Home</span>
+        </a>
+        <a href="report.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f]">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span class="text-xs">Report</span>
+        </a>
+        <a href="alerts.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f]">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="text-xs">Alerts</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f]">
+            <span class="material-symbols-outlined">person</span>
+            <span class="text-xs">Profile</span>
+        </a>
+    </div>
+</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>My Reports - Civic Pulse</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Status Badges */
+        .status-pending {
+            background: #F94144;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-progress {
+            background: #F9C74F;
+            color: #1a1a1a;
+            padding: 2px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-resolved {
+            background: #2d6a4f;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Report Card - White Box */
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border-color: #2d6a4f;
+        }
+
+        /* Stat Box - White */
+        .stat-box {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+        }
+        .stat-box .number {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* Filter Tabs - White Box */
+        .filter-container {
+            background: white;
+            border-radius: 12px;
+            padding: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+            display: flex;
+            gap: 4px;
+        }
+        .filter-tab {
+            flex: 1;
+            padding: 8px 0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-align: center;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+        }
+        .filter-tab.active {
+            background: #2d6a4f;
+            color: white;
+        }
+        .filter-tab:hover:not(.active) {
+            background: #f3f4f6;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: Inter, sans-serif;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            max-width: 90%;
+        }
+        .toast.show { opacity: 1; }
+        .toast.success { background: #2d6a4f; }
+        .toast.error { background: #ba1a1a; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .empty-state .icon {
+            font-size: 56px;
+            color: #d1d5db;
+        }
+        .empty-state .title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-top: 12px;
+        }
+        .empty-state .subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .empty-state .btn {
+            display: inline-block;
+            margin-top: 16px;
+            background: #2d6a4f;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased flex flex-col min-h-screen font-body-lg">
+
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Header -->
+<header class="bg-white sticky top-0 z-50 flex items-center px-5 py-4 w-full shadow-sm">
+    <a href="index.html" class="mr-4 p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Back">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h1 class="text-xl font-bold text-[#0f5238] flex-1">📋 My Reports</h1>
+    <button id="refreshBtn" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+        <span class="material-symbols-outlined text-[#2d6a4f]">refresh</span>
+    </button>
+</header>
+
+<!-- Main Content -->
+<main class="px-5 py-4 flex flex-col gap-5 pb-32">
+
+    <!-- Stats - White Boxes -->
+    <div class="grid grid-cols-3 gap-3">
+        <div class="stat-box">
+            <p class="number text-[#0f5238]" id="totalReports">12</p>
+            <p class="text-xs text-gray-500">Total</p>
+        </div>
+        <div class="stat-box">
+            <p class="number text-[#F94144]" id="pendingReports">4</p>
+            <p class="text-xs text-gray-500">Pending</p>
+        </div>
+        <div class="stat-box">
+            <p class="number text-[#2d6a4f]" id="resolvedReports">8</p>
+            <p class="text-xs text-gray-500">Resolved</p>
+        </div>
+    </div>
+
+    <!-- Filter Tabs - White Box -->
+    <div class="filter-container">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="pending">Pending</button>
+        <button class="filter-tab" data-filter="progress">In Progress</button>
+        <button class="filter-tab" data-filter="resolved">Resolved</button>
+    </div>
+
+    <!-- Report List -->
+    <div id="reportList" class="flex flex-col gap-3">
+
+        <!-- Report 1 - Pending -->
+        <div class="report-card" data-status="pending">
+            <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-[#F94144] text-3xl">trip_origin</span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                        <p class="font-semibold text-sm text-[#191c1d]">Deep pothole on MG Road</p>
+                        <span class="status-pending flex-shrink-0">Pending</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">📍 123 Main St • 2 days ago</p>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-xs text-gray-400">🕐 Jan 15, 2026</span>
+                        <span class="text-xs text-gray-400">👁️ 23 views</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report 2 - In Progress -->
+        <div class="report-card" data-status="progress">
+            <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-[#F9C74F] text-3xl">delete</span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                        <p class="font-semibold text-sm text-[#191c1d]">Garbage overflow at bus stop</p>
+                        <span class="status-progress flex-shrink-0">In Progress</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">📍 456 Oak Ave • 5 days ago</p>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-xs text-gray-400">🕐 Jan 12, 2026</span>
+                        <span class="text-xs text-gray-400">👁️ 45 views</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report 3 - Resolved -->
+        <div class="report-card" data-status="resolved">
+            <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-[#2d6a4f] text-3xl">lightbulb</span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                        <p class="font-semibold text-sm text-[#191c1d]">Streetlight not working</p>
+                        <span class="status-resolved flex-shrink-0">Resolved</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">📍 789 Pine St • 1 week ago</p>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-xs text-gray-400">🕐 Jan 8, 2026</span>
+                        <span class="text-xs text-gray-400">👁️ 12 views</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report 4 - Pending -->
+        <div class="report-card" data-status="pending">
+            <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-[#F94144] text-3xl">water_drop</span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start gap-2">
+                        <p class="font-semibold text-sm text-[#191c1d]">Water logging on Elm Street</p>
+                        <span class="status-pending flex-shrink-0">Pending</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">📍 321 Elm Blvd • 3 days ago</p>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-xs text-gray-400">🕐 Jan 13, 2026</span>
+                        <span class="text-xs text-gray-400">👁️ 8 views</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state hidden">
+        <span class="icon material-symbols-outlined">list_alt</span>
+        <p class="title">No reports found</p>
+        <p class="subtitle">Start reporting issues in your neighborhood</p>
+        <a href="report.html" class="btn">📝 Report Now</a>
+    </div>
+
+</main>
+
+<!-- Bottom Navigation -->
+<div class="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-200 z-50">
+    <div class="flex justify-around py-2">
+        <a href="index.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f] transition-colors">
+            <span class="material-symbols-outlined">home</span>
+            <span class="text-xs">Home</span>
+        </a>
+        <a href="report.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f] transition-colors">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span class="text-xs">Report</span>
+        </a>
+        <a href="my-reports.html" class="flex flex-col items-center text-[#2d6a4f] transition-colors">
+            <span class="material-symbols-outlined filled">list_alt</span>
+            <span class="text-xs">My Reports</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f] transition-colors">
+            <span class="material-symbols-outlined">person</span>
+            <span class="text-xs">Profile</span>
+        </a>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- JAVASCRIPT                                -->
+<!-- ========================================== -->
+<script>
+    (function() {
+        'use strict';
+
+        // --- DOM Elements ---
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        const reports = document.querySelectorAll('.report-card');
+        const emptyState = document.getElementById('emptyState');
+        const toast = document.getElementById('toast');
+        const refreshBtn = document.getElementById('refreshBtn');
+        let toastTimeout = null;
+
+        // --- Load Reports from localStorage ---
+        function loadReportsFromStorage() {
+            try {
+                const data = localStorage.getItem('civicReports');
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // --- Update Stats ---
+        function updateStats() {
+            const allReports = loadReportsFromStorage();
+            const total = allReports.length;
+            const pending = allReports.filter(r => r.status === 'Pending').length;
+            const resolved = allReports.filter(r => r.status === 'Resolved').length;
+            
+            document.getElementById('totalReports').textContent = total || 0;
+            document.getElementById('pendingReports').textContent = pending || 0;
+            document.getElementById('resolvedReports').textContent = resolved || 0;
+        }
+
+        // --- Filter Reports ---
+        function filterReports(filter) {
+            let visibleCount = 0;
+            
+            reports.forEach(report => {
+                const status = report.dataset.status;
+                if (filter === 'all' || status === filter) {
+                    report.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    report.style.display = 'none';
+                }
+            });
+
+            // Show/hide empty state
+            if (visibleCount === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        // --- Filter Tab Click ---
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Update active tab
+                filterTabs.forEach(t => {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Filter reports
+                const filter = this.dataset.filter;
+                filterReports(filter);
+                showToast(`Showing ${filter} reports`, 'success');
+            });
+        });
+
+        // --- Click Report to Go to Detail ---
+        reports.forEach(report => {
+            report.addEventListener('click', function() {
+                // In real app, you'd pass the report ID
+                window.location.href = 'detail.html';
+            });
+        });
+
+        // --- Refresh ---
+        refreshBtn.addEventListener('click', function() {
+            updateStats();
+            showToast('🔄 Reports refreshed!', 'success');
+        });
+
+        // --- Toast System ---
+        function showToast(message, type) {
+            if (toastTimeout) clearTimeout(toastTimeout);
+            
+            toast.textContent = message;
+            toast.className = 'toast';
+            if (type === 'success') toast.classList.add('success');
+            if (type === 'error') toast.classList.add('error');
+            toast.classList.add('show');
+            
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // --- Init ---
+        function init() {
+            updateStats();
+            filterReports('all');
+            console.log('✅ My Reports page loaded!');
+            console.log('📊 Total reports:', loadReportsFromStorage().length);
+        }
+
+        // --- Run ---
+        init();
+
+    })();
+</script>
+
+</body>
+</html>
