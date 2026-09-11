@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <!-- Supabase JS CDN & Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/supabaseClient.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f0f2f5; color: #1a1a2e; min-height: 100vh; }
@@ -235,17 +238,30 @@
         const recentIssuesContainer = document.getElementById('recentIssues');
         let toastTimeout = null;
 
-        function loadReports() {
+        async function loadReports() {
+            if (window.supabaseClient) {
+                try {
+                    const { data, error } = await window.supabaseClient
+                        .from('reports')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    if (!error && data && data.length > 0) {
+                        return data;
+                    }
+                } catch(e) {
+                    console.warn('Supabase fetch error:', e);
+                }
+            }
             try { const data = localStorage.getItem('civicReports'); return data ? JSON.parse(data) : []; } 
             catch(e) { return []; }
         }
 
-        function updateStats() {
-            const reports = loadReports();
+        async function updateStats() {
+            const reports = await loadReports();
             const total = reports.length;
-            const pending = reports.filter(r => r.status === 'Pending').length;
-            const progress = reports.filter(r => r.status === 'In Progress').length;
-            const resolved = reports.filter(r => r.status === 'Resolved').length;
+            const pending = reports.filter(r => (r.status || '').toLowerCase() === 'pending').length;
+            const progress = reports.filter(r => (r.status || '').toLowerCase() === 'in progress' || (r.status || '').toLowerCase() === 'progress').length;
+            const resolved = reports.filter(r => (r.status || '').toLowerCase() === 'resolved').length;
 
             document.getElementById('heroTotal').textContent = total || 0;
             document.getElementById('heroPending').textContent = pending || 0;
@@ -256,9 +272,9 @@
             document.getElementById('resolvedStats').textContent = resolved || 0;
         }
 
-        function renderRecentIssues() {
-            const reports = loadReports();
-            const recent = reports.slice(-3).reverse();
+        async function renderRecentIssues() {
+            const reports = await loadReports();
+            const recent = reports.slice(0, 3);
 
             if (recent.length === 0) {
                 recentIssuesContainer.innerHTML = `
@@ -272,24 +288,28 @@
                 return;
             }
 
-            const statusMap = { 'Pending': 'pending', 'In Progress': 'progress', 'Resolved': 'resolved' };
-            const statusLabels = { 'Pending': 'Pending', 'In Progress': 'In Progress', 'Resolved': 'Resolved ✓' };
+            const statusMap = { 'pending': 'pending', 'in progress': 'progress', 'resolved': 'resolved' };
+            const statusLabels = { 'pending': 'Pending', 'in progress': 'In Progress', 'resolved': 'Resolved ✓' };
 
-            recentIssuesContainer.innerHTML = recent.map(report => `
+            recentIssuesContainer.innerHTML = recent.map(report => {
+                const s = (report.status || 'pending').toLowerCase();
+                const ts = report.created_at || report.timestamp;
+                return `
                 <div class="issue-card" onclick="window.location.href='detail.html'">
                     <div class="flex items-start gap-3">
                         <span class="text-2xl">${report.category === 'pothole' ? '🕳️' : report.category === 'garbage' ? '🗑️' : report.category === 'streetlight' ? '💡' : report.category === 'drainage' ? '🌊' : '📍'}</span>
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-start gap-2">
-                                <p class="font-semibold text-sm text-[#1a1a2e] truncate">${report.description || report.category}</p>
-                                <span class="status-badge ${statusMap[report.status] || 'pending'} flex-shrink-0">${statusLabels[report.status] || 'Pending'}</span>
+                                <p class="font-semibold text-sm text-[#1a1a2e] truncate">${report.description || report.title || report.category}</p>
+                                <span class="status-badge ${statusMap[s] || 'pending'} flex-shrink-0">${statusLabels[s] || 'Pending'}</span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">📍 ${report.address || 'Unknown location'}</p>
-                            <p class="text-[10px] text-gray-400 mt-1">${report.timestamp ? new Date(report.timestamp).toLocaleDateString() : 'Recently'}</p>
+                            <p class="text-[10px] text-gray-400 mt-1">${ts ? new Date(ts).toLocaleDateString() : 'Recently'}</p>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function showToast(message, type) {

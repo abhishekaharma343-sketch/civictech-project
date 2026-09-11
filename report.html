@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <!-- Supabase JS CDN & Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/supabaseClient.js"></script>
     <!-- Leaflet CSS (Free Map) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
@@ -470,7 +473,7 @@
     // ============================================
     // SUBMIT REPORT
     // ============================================
-    document.getElementById('submitBtn').addEventListener('click', function() {
+    document.getElementById('submitBtn').addEventListener('click', async function() {
         const description = document.getElementById('descriptionInput').value.trim();
         const lat = document.getElementById('latitude').value;
         const lng = document.getElementById('longitude').value;
@@ -490,6 +493,28 @@
         
         this.innerHTML = '<span class="spinner" style="width:24px;height:24px;"></span> Submitting...';
         this.disabled = true;
+
+        // Try inserting into Supabase
+        if (window.supabaseClient) {
+            try {
+                const { error } = await window.supabaseClient.from('reports').insert([{
+                    title: selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1) + ' Issue',
+                    category: selectedCategory,
+                    description: description,
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lng),
+                    address: address || 'Unknown location',
+                    status: 'pending'
+                }]);
+                if (error) {
+                    console.warn('Supabase insert warning:', error);
+                } else {
+                    console.log('✅ Inserted into Supabase reports table');
+                }
+            } catch(err) {
+                console.warn('Supabase error:', err);
+            }
+        }
         
         setTimeout(() => {
             const reportData = {
@@ -523,7 +548,7 @@
             setTimeout(() => {
                 window.location.href = 'success.html';
             }, 1500);
-        }, 1500);
+        }, 800);
     });
 
     // ============================================
