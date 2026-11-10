@@ -1,343 +1,270 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-    <title>Alerts - Civic Pulse</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
-    <style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        
-        .notification-item {
-            transition: all 0.2s ease;
-        }
-        
-        .notification-item:hover {
-            background: #f0f1f2;
-        }
-        
-        .notification-item.unread {
-            border-left: 4px solid #2d6a4f;
-        }
-        
-        @keyframes slide-in {
-            from { transform: translateX(-20px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        .notification-item {
-            animation: slide-in 0.3s ease-out;
-        }
-        
-        .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a1a1a;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-family: Inter, sans-serif;
-            font-size: 14px;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        }
-        
-        .toast.show {
-            opacity: 1;
-        }
-        
-        .toast.success {
-            background: #2d6a4f;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Civic Pulse</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1ea;--card:#fff;--ink:#14262b;--mute:#5d6f73;--line:#d8dfd6;--brand:#1f7a73;--sun:#f2b705;--red:#d64545;--amber:#e08a00;--green:#2f9e5b;--map:#e4eadf;--water:#bcd9e3;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1a1d;--card:#15272b;--ink:#eaf1ee;--mute:#92a8aa;--line:#264146;--brand:#3fc0b3;--map:#183136;--water:#1e4a5a}}
+:root[data-theme="dark"]{--bg:#0d1a1d;--card:#15272b;--ink:#eaf1ee;--mute:#92a8aa;--line:#264146;--brand:#3fc0b3;--map:#183136;--water:#1e4a5a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Figtree,system-ui,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+h1,h2,h3{font-family:"Bricolage Grotesque",Figtree,system-ui,sans-serif;margin:0;line-height:1.1}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;padding:0 16px 96px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.logo{font:800 22px "Bricolage Grotesque",sans-serif;display:flex;align-items:center;gap:8px}
+.logo i{width:14px;height:14px;border-radius:50%;background:var(--sun);box-shadow:0 0 0 0 var(--sun);animation:ping 2.4s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.ib{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:18px;transition:transform .2s}
+.ib:active{transform:scale(.88) rotate(20deg)}
+.view{display:none}.view.on{display:block;animation:in .35s ease}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}
+.hero{background:var(--brand);color:#fff;border-radius:28px;padding:24px;position:relative;overflow:hidden;min-height:190px}
+.hero h1{font-size:34px;max-width:11ch}.hero p{margin:8px 0 0;opacity:.9;max-width:22ch}
+.ring{position:absolute;right:-30px;top:-30px;width:200px;height:200px}
+.ring b,.ring span{position:absolute;inset:0;border-radius:50%;border:2px solid var(--sun);animation:rip 3.6s infinite;opacity:0}
+.ring span{animation-delay:1.2s}.ring em{position:absolute;inset:70px;border-radius:50%;background:var(--sun);color:#14262b;display:grid;place-items:center;font:800 30px "Bricolage Grotesque";font-style:normal}
+.ring b{animation-delay:0s}
+@keyframes rip{0%{transform:scale(.35);opacity:.9}100%{transform:scale(1);opacity:0}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}
+.stat b{display:block;font:800 28px "Bricolage Grotesque"}.stat small{color:var(--mute)}
+.stat.r b{color:var(--red)}.stat.a b{color:var(--amber)}.stat.g b{color:var(--green)}
+h2{font-size:22px;margin:22px 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.act{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;transition:transform .2s,border-color .2s}
+.act:hover{transform:translateY(-3px);border-color:var(--brand)}.act:active{transform:scale(.96)}
+.act span{font-size:26px;display:block}.act b{display:block}.act small{color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:12px}
+.ico{width:44px;height:44px;border-radius:14px;background:var(--bg);display:grid;place-items:center;font-size:22px;flex:none}
+.grow{flex:1;min-width:0}.grow b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.grow small{color:var(--mute)}
+.badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;color:#fff;white-space:nowrap}
+.b0{background:var(--red)}.b1{background:var(--amber)}.b2{background:var(--green)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:8px 14px;white-space:nowrap;transition:all .2s}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+label{display:block;font-weight:600;margin:14px 0 6px}
+input,textarea{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:12px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+.btn{width:100%;margin-top:18px;border:0;border-radius:16px;padding:15px;background:var(--sun);color:#14262b;font-weight:600;font-size:17px;transition:transform .15s}
+.btn:active{transform:scale(.97)}.btn.sec{background:var(--card);color:var(--ink);border:1px solid var(--line);margin-top:10px}
+.stepper{display:flex;gap:6px;margin:12px 0 4px}.stepper i{flex:1;height:6px;border-radius:9px;background:var(--line);transition:background .4s}
+.stepper i.f{background:var(--brand)}
+.more{display:none;margin-top:10px;font-size:15px}.card.open .more{display:block;animation:in .25s}
+.map{width:100%;border-radius:22px;border:1px solid var(--line);display:block;background:var(--map);touch-action:manipulation}
+.pin{cursor:pointer;animation:drop .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes drop{from{transform:translateY(-40px);opacity:0}}
+.pin:hover circle{r:11}
+.bar{height:12px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;width:0;background:var(--brand);border-radius:9px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.donut{width:150px;height:150px;transform:rotate(-90deg)}
+.donut circle{fill:none;stroke-width:16;transition:stroke-dasharray 1.1s ease}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--mute)}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;justify-content:center;padding:0 12px calc(10px + env(safe-area-inset-bottom,0px))}
+nav div{display:flex;width:100%;max-width:536px;background:var(--ink);border-radius:24px;padding:6px}
+nav button{flex:1;border:0;background:none;color:var(--bg);opacity:.6;padding:8px 0;border-radius:18px;font-size:12px;transition:all .25s}
+nav button span{display:block;font-size:20px}
+nav button.on{opacity:1;background:var(--brand)}
+.toast{position:fixed;left:50%;bottom:104px;transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:99px;opacity:0;pointer-events:none;transition:all .35s;z-index:20;max-width:90%}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.empty{text-align:center;color:var(--mute);padding:30px 10px}
+.lmap{height:330px;border-radius:22px;border:1px solid var(--line);position:relative;z-index:0;isolation:isolate;background:var(--map)}
+.note{display:block;margin-top:6px;color:var(--mute)}
+.leaflet-container{overflow:hidden;position:relative;touch-action:none;font:inherit}
+.leaflet-pane,.leaflet-marker-icon,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0}
+.leaflet-pane{z-index:400}.leaflet-overlay-pane{z-index:400}.leaflet-marker-pane{z-index:600}
+.leaflet-image-layer{max-width:none!important;user-select:none}
+.leaflet-marker-icon{pointer-events:none}.leaflet-marker-icon.leaflet-interactive{pointer-events:auto;cursor:pointer}
+.leaflet-zoom-animated{transform-origin:0 0}.leaflet-zoom-anim .leaflet-zoom-animated{transition:transform .25s cubic-bezier(0,0,.25,1)}
+.leaflet-grab{cursor:grab}.leaflet-dragging .leaflet-grab{cursor:grabbing}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}.leaflet-right{right:0}
+.leaflet-control{position:relative;z-index:800;pointer-events:auto;float:left;clear:both;margin:10px}
+.leaflet-bar{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
+.leaflet-bar a{display:block;width:38px;height:38px;line-height:38px;text-align:center;text-decoration:none;color:var(--ink);font-size:20px;border-bottom:1px solid var(--line)}
+.leaflet-bar a:last-child{border:0}.leaflet-disabled{opacity:.35}
+.mk{width:34px;height:34px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;font-size:16px;box-shadow:0 3px 8px rgba(0,0,0,.35);animation:drop .5s cubic-bezier(.3,1.6,.5,1) both}
+.hero{background:linear-gradient(135deg,var(--brand),#165a62 60%,#0f3d4a);box-shadow:0 18px 40px -18px var(--brand)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.18) 50%,transparent 60%);transform:translateX(-100%);animation:sheen 5s 1s infinite;pointer-events:none}
+@keyframes sheen{to{transform:translateX(100%)}}
+.card,.stat,.act{transition:transform .25s,box-shadow .25s,border-color .2s}
+.card:hover{transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(0,0,0,.45)}
+#list>.card{animation:in .4s both}#list>.card:nth-child(2){animation-delay:.06s}#list>.card:nth-child(3){animation-delay:.12s}#list>.card:nth-child(4){animation-delay:.18s}
+nav button.on span{animation:bob .5s}@keyframes bob{40%{transform:translateY(-6px) scale(1.25)}}
+.conf{position:fixed;top:0;font-size:24px;pointer-events:none;z-index:50;animation:fall 1.8s ease-in forwards}
+@keyframes fall{to{transform:translate(var(--dx),105vh) rotate(var(--r));opacity:.2}}
+#bot{position:fixed;right:14px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:15;width:58px;height:58px;border-radius:50%;border:0;background:var(--sun);font-size:30px;box-shadow:0 8px 20px -6px rgba(0,0,0,.5);animation:wave 3s infinite}
+@keyframes wave{0%,70%,100%{transform:rotate(0)}75%{transform:rotate(-14deg)}85%{transform:rotate(12deg)}}
+#chat{position:fixed;right:12px;left:12px;max-width:420px;margin-left:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:16;background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 20px 50px -16px rgba(0,0,0,.55);display:none;flex-direction:column;max-height:min(68vh,520px);overflow:hidden}
+#chat.on{display:flex;animation:in .3s}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 10px 16px;background:var(--brand);color:#fff}
+.ch .ib{width:34px;height:34px;font-size:15px;margin-left:6px;background:rgba(255,255,255,.18);border:0}
+.msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.m{max-width:85%;padding:9px 12px;border-radius:16px;background:var(--bg);animation:in .25s}
+.m.u{align-self:flex-end;background:var(--brand);color:#fff}
+.tq{display:flex;gap:6px;flex-wrap:wrap}.tq .chip{font-size:14px;padding:6px 12px}
+.cin{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
+.cin button{width:44px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-size:18px}
+.cin button.rec{background:var(--red);animation:ping 1s infinite}
+.spot{position:relative;z-index:12;border-radius:18px;animation:spot 1.2s infinite}
+@keyframes spot{0%,100%{box-shadow:0 0 0 3px var(--sun)}50%{box-shadow:0 0 0 10px rgba(242,183,5,.25)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
-<body class="bg-[#f8f9fa] text-[#191c1d] antialiased font-body-lg min-h-screen">
+<body>
+<div class="app">
+<header><div class="logo"><i></i>Civic Pulse</div><button class="ib" id="theme" aria-label="Switch light or dark mode">🌓</button></header>
 
-<!-- Toast -->
-<div id="toast" class="toast"></div>
+<section class="view" id="home"></section>
 
-<!-- Header -->
-<header class="bg-white sticky top-0 z-50 flex items-center px-5 py-4 w-full shadow-sm">
-    <a href="index.html" class="mr-4 p-2 rounded-full hover:bg-gray-100 transition-colors">
-        <span class="material-symbols-outlined">arrow_back</span>
-    </a>
-    <h1 class="text-xl font-bold text-[#0f5238] flex-1">🔔 Alerts</h1>
-    <button id="markAllReadBtn" class="text-sm text-[#2d6a4f] font-semibold hover:underline">
-        Mark all read
-    </button>
-</header>
+<section class="view" id="report">
+<h2>Report an issue</h2>
+<form id="form" onsubmit="return false">
+<label>What’s the problem?</label><input id="t" maxlength="60" placeholder="e.g. Deep pothole near the market">
+<label>Category</label><div class="chips" id="cats"></div>
+<label>Details</label><textarea id="d" placeholder="Describe what you saw and how long it has been there"></textarea>
+<label>Tap the map to set the location</label>
+<div id="pick"></div>
+<button class="btn" id="send">Send report</button>
+</form>
+</section>
 
-<!-- Main Content -->
-<main class="px-5 py-4 flex flex-col gap-4 pb-32">
+<section class="view" id="mine"><h2>My reports</h2><div class="chips" id="flt"></div><div id="list"></div></section>
 
-    <!-- Filter Tabs -->
-    <div class="flex gap-2 bg-white p-1 rounded-xl shadow-sm">
-        <button class="filter-tab flex-1 py-2 rounded-lg text-sm font-semibold bg-[#2d6a4f] text-white transition-all" data-filter="all">
-            All
-        </button>
-        <button class="filter-tab flex-1 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:bg-gray-100 transition-all" data-filter="unread">
-            Unread
-        </button>
-        <button class="filter-tab flex-1 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:bg-gray-100 transition-all" data-filter="resolved">
-            Resolved
-        </button>
-    </div>
+<section class="view" id="map"><h2>Issues nearby</h2><div id="bigmap"></div><div id="pinfo" class="card" style="margin-top:12px"><span class="empty">Tap a pin to see the report.</span></div></section>
 
-    <!-- Notification List -->
-    <div id="notificationList" class="space-y-3">
-
-        <!-- Notification 1 -->
-        <div class="notification-item unread bg-white rounded-xl p-4 shadow-sm" data-status="unread">
-            <div class="flex items-start gap-3">
-                <span class="material-symbols-outlined text-[#2d6a4f] text-2xl">check_circle</span>
-                <div class="flex-1">
-                    <p class="font-semibold text-sm">✅ Issue Resolved: Pothole on MG Road</p>
-                    <p class="text-sm text-gray-500 mt-1">Your report has been resolved. The pothole has been filled.</p>
-                    <div class="flex items-center gap-3 mt-2">
-                        <span class="text-xs text-[#2d6a4f] bg-green-50 px-2 py-0.5 rounded-full">Resolved</span>
-                        <span class="text-xs text-gray-400">2 hours ago</span>
-                    </div>
-                </div>
-                <button class="dismiss-btn text-gray-400 hover:text-gray-600">
-                    <span class="material-symbols-outlined text-sm">close</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Notification 2 -->
-        <div class="notification-item unread bg-white rounded-xl p-4 shadow-sm" data-status="unread">
-            <div class="flex items-start gap-3">
-                <span class="material-symbols-outlined text-[#F9C74F] text-2xl">progress_activity</span>
-                <div class="flex-1">
-                    <p class="font-semibold text-sm">⏳ Status Updated: Garbage at Bus Stop</p>
-                    <p class="text-sm text-gray-500 mt-1">Your report is now "In Progress". A team has been assigned.</p>
-                    <div class="flex items-center gap-3 mt-2">
-                        <span class="text-xs text-[#F9C74F] bg-yellow-50 px-2 py-0.5 rounded-full">In Progress</span>
-                        <span class="text-xs text-gray-400">5 hours ago</span>
-                    </div>
-                </div>
-                <button class="dismiss-btn text-gray-400 hover:text-gray-600">
-                    <span class="material-symbols-outlined text-sm">close</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Notification 3 -->
-        <div class="notification-item bg-white rounded-xl p-4 shadow-sm opacity-70" data-status="read">
-            <div class="flex items-start gap-3">
-                <span class="material-symbols-outlined text-[#F94144] text-2xl">warning</span>
-                <div class="flex-1">
-                    <p class="font-semibold text-sm">⚠️ Your report needs more details</p>
-                    <p class="text-sm text-gray-500 mt-1">Please add a photo to your report for faster resolution.</p>
-                    <div class="flex items-center gap-3 mt-2">
-                        <span class="text-xs text-[#F94144] bg-red-50 px-2 py-0.5 rounded-full">Action Required</span>
-                        <span class="text-xs text-gray-400">1 day ago</span>
-                    </div>
-                </div>
-                <button class="dismiss-btn text-gray-400 hover:text-gray-600">
-                    <span class="material-symbols-outlined text-sm">close</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Notification 4 -->
-        <div class="notification-item bg-white rounded-xl p-4 shadow-sm opacity-70" data-status="read">
-            <div class="flex items-start gap-3">
-                <span class="material-symbols-outlined text-[#2d6a4f] text-2xl">thumb_up</span>
-                <div class="flex-1">
-                    <p class="font-semibold text-sm">👍 Your report got 15 upvotes!</p>
-                    <p class="text-sm text-gray-500 mt-1">The community is supporting your report. This helps prioritize it.</p>
-                    <div class="flex items-center gap-3 mt-2">
-                        <span class="text-xs text-[#2d6a4f] bg-green-50 px-2 py-0.5 rounded-full">Community Support</span>
-                        <span class="text-xs text-gray-400">3 days ago</span>
-                    </div>
-                </div>
-                <button class="dismiss-btn text-gray-400 hover:text-gray-600">
-                    <span class="material-symbols-outlined text-sm">close</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Notification 5 -->
-        <div class="notification-item bg-white rounded-xl p-4 shadow-sm opacity-70" data-status="read">
-            <div class="flex items-start gap-3">
-                <span class="material-symbols-outlined text-[#52B788] text-2xl">celebration</span>
-                <div class="flex-1">
-                    <p class="font-semibold text-sm">🎉 Welcome to Civic Pulse!</p>
-                    <p class="text-sm text-gray-500 mt-1">Thank you for joining. Start reporting issues in your neighborhood.</p>
-                    <div class="flex items-center gap-3 mt-2">
-                        <span class="text-xs text-[#52B788] bg-green-50 px-2 py-0.5 rounded-full">Welcome</span>
-                        <span class="text-xs text-gray-400">5 days ago</span>
-                    </div>
-                </div>
-                <button class="dismiss-btn text-gray-400 hover:text-gray-600">
-                    <span class="material-symbols-outlined text-sm">close</span>
-                </button>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Empty State (Hidden by default) -->
-    <div id="emptyState" class="hidden text-center py-12">
-        <span class="material-symbols-outlined text-6xl text-gray-300">notifications_off</span>
-        <p class="text-gray-500 mt-3 font-semibold">No notifications</p>
-        <p class="text-sm text-gray-400">You're all caught up!</p>
-    </div>
-
-</main>
-
-<!-- Bottom Navigation -->
-<div class="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-200 z-50">
-    <div class="flex justify-around py-2">
-        <a href="index.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f]">
-            <span class="material-symbols-outlined">home</span>
-            <span class="text-xs">Home</span>
-        </a>
-        <a href="report.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f]">
-            <span class="material-symbols-outlined">add_circle</span>
-            <span class="text-xs">Report</span>
-        </a>
-        <a href="alerts.html" class="flex flex-col items-center text-[#2d6a4f]">
-            <span class="material-symbols-outlined filled">notifications</span>
-            <span class="text-xs">Alerts</span>
-        </a>
-        <a href="profile.html" class="flex flex-col items-center text-gray-500 hover:text-[#2d6a4f]">
-            <span class="material-symbols-outlined">person</span>
-            <span class="text-xs">Profile</span>
-        </a>
-    </div>
+<section class="view" id="dash"></section>
+<section class="view" id="alerts"><h2>Alerts</h2><div id="alist"></div></section>
+<section class="view" id="profile"></section>
 </div>
 
-<!-- ==================== JAVASCRIPT ==================== -->
+<nav><div id="nav"></div></nav>
+<button id="bot" aria-label="Open Pulsey, the city guide" aria-expanded="false">🦉</button>
+<div id="chat" role="dialog" aria-label="Pulsey, the city guide"><div class="ch"><b>🦉 Pulsey, your city guide</b><span><button class="ib" id="spk" aria-label="Read replies aloud">🔇</button><button class="ib" id="x" aria-label="Close guide">✕</button></span></div><div class="msgs" id="msgs" aria-live="polite"></div><div class="cin"><button id="mic" aria-label="Speak to Pulsey">🎤</button><input id="ci" placeholder="Type or tap the mic…" maxlength="120"><button id="go2" aria-label="Send">➤</button></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
-    (function() {
-        'use strict';
+const $=s=>document.querySelector(s);
+const ST=['Pending','In progress','Resolved'],CL=['var(--red)','var(--amber)','var(--green)'];
+const CATS={Road:'🕳️',Garbage:'🗑️',Water:'💧',Light:'💡',Safety:'🛡️',Other:'📍'};
+const NAV=[['home','🏠','Home'],['report','➕','Report'],['mine','📋','Mine'],['map','🗺️','Map'],['dash','📊','Stats']];
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let R=load('cp_r',null)||[
+{id:1,t:'Deep pothole on Market Road',c:'Road',d:'Two bikes have already slipped here this week.',s:1,x:120,y:150,at:Date.now()-864e5*3},
+{id:2,t:'Garbage pile near the bus stop',c:'Garbage',d:'Not collected for five days and starting to smell.',s:0,x:260,y:90,at:Date.now()-864e5*2},
+{id:3,t:'Streetlight out on Park Lane',c:'Light',d:'The whole lane is dark after 7 pm.',s:2,x:310,y:215,at:Date.now()-864e5*6},
+{id:4,t:'Water leak at ward office',c:'Water',d:'Clean water running into the drain all day.',s:0,x:70,y:70,at:Date.now()-864e5}];
+let A=load('cp_a',[{m:'Welcome to Civic Pulse. Your reports and updates appear here.',at:Date.now()-5e3}]);
+let P=load('cp_p',{name:'Citizen'}),flt=-1,cat='Road',pick=null,nid=R.reduce((a,r)=>Math.max(a,r.id),0)+1;
+const persist=()=>{save('cp_r',R);save('cp_a',A);save('cp_p',P)};
+const ago=t=>{const m=(Date.now()-t)/6e4;return m<2?'just now':m<60?Math.round(m)+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
+function count(el,n){let s=null;const f=t=>{s=s||t;const p=Math.min((t-s)/900,1);el.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
 
-        const filterTabs = document.querySelectorAll('.filter-tab');
-        const notifications = document.querySelectorAll('.notification-item');
-        const markAllBtn = document.getElementById('markAllReadBtn');
-        const dismissBtns = document.querySelectorAll('.dismiss-btn');
-        const emptyState = document.getElementById('emptyState');
-        const toast = document.getElementById('toast');
-        let toastTimeout = null;
+function cityBase(){return `<rect width="400" height="300" fill="var(--map)"/><path d="M0 235 C90 215 150 265 240 245 S360 225 400 250 V300 H0Z" fill="var(--water)"/><rect x="215" y="20" width="85" height="55" rx="14" fill="var(--green)" opacity=".28"/><g stroke="var(--line)" stroke-width="10" stroke-linecap="round" fill="none"><path d="M0 110H400M0 190H400M95 0V230M205 0V225M315 0V230"/></g><g stroke="var(--card)" stroke-width="2" stroke-dasharray="8 8" fill="none"><path d="M0 110H400M0 190H400M95 0V230M205 0V225M315 0V230"/></g>`}
+function pins(list,click){return list.map((r,i)=>`<g class="pin" style="animation-delay:${i*90}ms" data-id="${r.id}" ${click?'tabindex="0" role="button" aria-label="'+esc(r.t)+'"':''}><circle cx="${r.x}" cy="${r.y}" r="9" fill="${CL[r.s]}" stroke="#fff" stroke-width="3"/><text x="${r.x}" y="${r.y-14}" font-size="13" text-anchor="middle">${CATS[r.c]}</text></g>`).join('')}
 
-        // --- 1. FILTER NOTIFICATIONS ---
-        filterTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Update active tab
-                filterTabs.forEach(t => {
-                    t.classList.remove('bg-[#2d6a4f]', 'text-white');
-                    t.classList.add('text-gray-500');
-                });
-                this.classList.add('bg-[#2d6a4f]', 'text-white');
-                this.classList.remove('text-gray-500');
+function item(r,full){return `<div class="card" data-id="${r.id}"><div class="row"><div class="ico">${CATS[r.c]}</div><div class="grow"><b>${esc(r.t)}</b><small>${r.c} · ${ago(r.at)}</small></div><span class="badge b${r.s}">${ST[r.s]}</span></div>${full?`<div class="stepper">${[0,1,2].map(i=>`<i class="${i<=r.s?'f':''}"></i>`).join('')}</div><div class="more"><p>${esc(r.d||'No details added.')}</p><button class="btn sec" data-adv="${r.id}" style="margin-top:0">${r.s<2?'Move to '+ST[r.s+1].toLowerCase():'Reopen report'}</button><button class="btn sec" data-del="${r.id}" style="color:var(--red)">Delete report</button></div>`:''}</div>`}
 
-                const filter = this.dataset.filter;
-                let visibleCount = 0;
+function home(){const n=s=>R.filter(r=>r.s===s).length,o=R.length-n(2);
+$('#home').innerHTML=`<div class="hero"><div class="ring"><b></b><span></span><em id="open">0</em></div><h1>Hello, ${esc(P.name)} 👋</h1><p>${o} open ${o===1?'issue':'issues'} in your city right now</p></div>
+<div class="stats"><div class="stat r"><b data-n="${n(0)}">0</b><small>Pending</small></div><div class="stat a"><b data-n="${n(1)}">0</b><small>In progress</small></div><div class="stat g"><b data-n="${n(2)}">0</b><small>Resolved</small></div></div>
+<h2>Quick actions</h2><div class="grid">${[['report','📍','Report an issue','Takes 30 seconds'],['mine','📋','My reports','Track every status'],['alerts','🔔','Alerts','Latest updates'],['map','🗺️','Map view','See what’s nearby']].map(a=>`<button class="act" data-go="${a[0]}"><span>${a[1]}</span><b>${a[2]}</b><small>${a[3]}</small></button>`).join('')}</div>
+<h2>Recent issues</h2>${R.slice().sort((a,b)=>b.at-a.at).slice(0,3).map(r=>item(r)).join('')||'<div class="empty">No reports yet.</div>'}`;
+count($('#open'),o);document.querySelectorAll('[data-n]').forEach(e=>count(e,+e.dataset.n))}
 
-                notifications.forEach(notification => {
-                    const status = notification.dataset.status;
-                    
-                    if (filter === 'all') {
-                        notification.style.display = 'block';
-                        visibleCount++;
-                    } else if (filter === 'unread' && status === 'unread') {
-                        notification.style.display = 'block';
-                        visibleCount++;
-                    } else if (filter === 'resolved' && status === 'read') {
-                        notification.style.display = 'block';
-                        visibleCount++;
-                    } else {
-                        notification.style.display = 'none';
-                    }
-                });
+function mine(){const f=document.createElement('div');
+$('#flt').innerHTML=['All',...ST].map((x,i)=>`<button class="chip ${flt===i-1?'on':''}" data-f="${i-1}">${x}</button>`).join('');
+const l=R.filter(r=>flt<0||r.s===flt).sort((a,b)=>b.at-a.at);
+$('#list').innerHTML=l.map(r=>item(r,1)).join('')||'<div class="empty">Nothing here yet. Report an issue to get started.</div>'}
 
-                // Show empty state
-                if (visibleCount === 0) {
-                    emptyState.classList.remove('hidden');
-                } else {
-                    emptyState.classList.add('hidden');
-                }
+function dash(){const tot=R.length,c=[0,1,2].map(s=>R.filter(r=>r.s===s).length),rate=tot?Math.round(c[2]/tot*100):0;let off=0;
+const seg=c.map((v,i)=>{const len=tot?v/tot*251.3:0,o=`<circle cx="60" cy="60" r="40" stroke="${CL[i]}" stroke-dasharray="0 251.3" data-len="${len}" stroke-dashoffset="${-off}"/>`;off+=len;return o}).join('');
+const cs=Object.keys(CATS).map(k=>[k,R.filter(r=>r.c===k).length]),mx=Math.max(1,...cs.map(x=>x[1]));
+$('#dash').innerHTML=`<h2>Dashboard</h2><div class="card row"><svg class="donut" viewBox="0 0 120 120"><circle cx="60" cy="60" r="40" stroke="var(--line)"/>${seg}</svg><div class="grow"><h3 style="font-size:40px"><span id="rate">0</span>%</h3><small style="color:var(--mute)">of ${tot} reports resolved</small></div></div>
+<div class="legend">${ST.map((s,i)=>`<span><i style="background:${CL[i]}"></i>${s} ${c[i]}</span>`).join('')}</div><h2>By category</h2><div class="card">${cs.map(k=>`<div style="margin-bottom:12px"><div class="row"><span>${CATS[k[0]]}</span><b class="grow">${k[0]}</b><span>${k[1]}</span></div><div class="bar"><i data-w="${k[1]/mx*100}"></i></div></div>`).join('')}</div>`;
+count($('#rate'),rate);setTimeout(()=>{document.querySelectorAll('.donut [data-len]').forEach(e=>e.setAttribute('stroke-dasharray',e.dataset.len+' 251.3'));document.querySelectorAll('[data-w]').forEach(e=>e.style.width=e.dataset.w+'%')},60)}
 
-                showToast(`Showing ${visibleCount} notifications`, 'success');
-            });
-        });
+function alerts(){$('#alist').innerHTML=A.map(a=>`<div class="card row"><div class="ico">🔔</div><div class="grow"><b style="white-space:normal">${esc(a.m)}</b><small>${ago(a.at)}</small></div></div>`).join('')}
+function profile(){$('#profile').innerHTML=`<h2>Profile</h2><div class="card"><label style="margin-top:0">Your name</label><input id="pn" maxlength="20" value="${esc(P.name)}"><div class="stats" style="margin-bottom:0"><div class="stat"><b>${R.length}</b><small>Reports</small></div><div class="stat"><b>${R.length*10}</b><small>Points</small></div><div class="stat"><b>${R.filter(r=>r.s===2).length}</b><small>Fixed</small></div></div></div><button class="btn" id="psave">Save name</button><button class="btn sec" id="alertsbtn" data-go="alerts">Open alerts</button><button class="btn sec" id="reset" style="color:var(--red)">Reset all data</button>`}
 
-        // --- 2. MARK ALL AS READ ---
-        markAllBtn.addEventListener('click', function() {
-            notifications.forEach(notification => {
-                notification.dataset.status = 'read';
-                notification.classList.remove('unread');
-                notification.style.opacity = '0.7';
-            });
-            showToast('✅ All notifications marked as read', 'success');
-        });
+function renderCats(){$('#cats').innerHTML=Object.keys(CATS).map(k=>`<button type="button" class="chip ${k===cat?'on':''}" data-c="${k}">${CATS[k]} ${k}</button>`).join('')}
+const LM={},cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function mkIcon(r){return L.divIcon({className:'',html:`<div class="mk" style="background:${CL[r.s]}">${CATS[r.c]}</div>`,iconSize:[34,34],iconAnchor:[17,17]})}
+function mkMap(id){const el=$('#'+id);if(LM[id]){LM[id].remove();LM[id]=null}
+if(!window.L){el.innerHTML='<div class="empty">The map library could not load. Check your connection and reload once.</div>';return null}
+const d=document.createElement('div');d.className='lmap';el.replaceChildren(d);
+const B=[[0,0],[300,400]],svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="800" height="600">'+cityBase().replace(/var\((--[\w-]+)\)/g,(m,v)=>cv(v))+'</svg>';
+const m=L.map(d,{crs:L.CRS.Simple,minZoom:-1.5,maxZoom:2,zoomSnap:.25,attributionControl:false,maxBounds:[[-40,-40],[340,440]]});
+L.imageOverlay('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg),B).addTo(m);m.fitBounds(B);LM[id]=m;
+el.insertAdjacentHTML('beforeend','<small class="note">📴 Offline map: drag to move, pinch or use + and − to zoom.</small>');return m}
+function renderPick(){const m=mkMap('pick');if(!m)return;R.forEach(r=>L.marker([300-r.y,r.x],{icon:mkIcon(r),interactive:false}).addTo(m));let cur=null;
+const put=()=>{if(cur)cur.remove();if(pick)cur=L.marker([300-pick.y,pick.x],{icon:L.divIcon({className:'',html:'<div class="mk" style="background:var(--sun)">📍</div>',iconSize:[34,34],iconAnchor:[17,17]}),interactive:false}).addTo(m)};put();
+m.on('click',e=>{pick={x:Math.max(0,Math.min(400,Math.round(e.latlng.lng))),y:Math.max(0,Math.min(300,Math.round(300-e.latlng.lat)))};put();toast('Location set')})}
+function bigmap(){const m=mkMap('bigmap');if(!m)return;R.forEach(r=>L.marker([300-r.y,r.x],{icon:mkIcon(r),title:r.t}).on('click',()=>{$('#pinfo').innerHTML=item(r)}).addTo(m))}
 
-        // --- 3. DISMISS INDIVIDUAL NOTIFICATION ---
-        dismissBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const notification = this.closest('.notification-item');
-                notification.style.display = 'none';
-                showToast('Notification dismissed', 'success');
+function go(v){if(!document.getElementById(v))v='home';document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id===v));
+document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===v));
+({home,mine,dash,alerts,profile,report(){renderCats();renderPick()},map:bigmap})[v]();
+if(location.hash!=='#'+v)location.hash=v;window.scrollTo({top:0})}
+$('#nav').innerHTML=NAV.map(n=>`<button data-go="${n[0]}"><span>${n[1]}</span>${n[2]}</button>`).join('');
 
-                // Check if all are dismissed
-                const visible = document.querySelectorAll('.notification-item[style*="display: block"], .notification-item:not([style*="display: none"])');
-                if (visible.length === 0) {
-                    emptyState.classList.remove('hidden');
-                }
-            });
-        });
-
-        // --- 4. CLICK NOTIFICATION TO VIEW DETAIL ---
-        notifications.forEach(notification => {
-            notification.addEventListener('click', function() {
-                // Mark as read when clicked
-                this.dataset.status = 'read';
-                this.classList.remove('unread');
-                this.style.opacity = '0.7';
-                showToast('📖 Opening notification details...', 'success');
-            });
-        });
-
-        // --- 5. TOAST SYSTEM ---
-        function showToast(message, type) {
-            if (toastTimeout) clearTimeout(toastTimeout);
-            
-            toast.textContent = message;
-            toast.className = 'toast';
-            if (type === 'success') toast.classList.add('success');
-            toast.classList.add('show');
-            
-            toastTimeout = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2500);
-        }
-
-        // --- 6. UNREAD COUNT BADGE ---
-        function updateBadge() {
-            const unreadCount = document.querySelectorAll('.notification-item.unread').length;
-            const badge = document.querySelector('.badge');
-            if (badge) {
-                badge.textContent = unreadCount;
-                badge.style.display = unreadCount > 0 ? 'inline' : 'none';
-            }
-        }
-
-        console.log('✅ Civic Pulse - Alerts Page Loaded!');
-        console.log('📊 Unread notifications:', document.querySelectorAll('.notification-item.unread').length);
-
-    })();
+document.addEventListener('click',e=>{const t=e.target,q=s=>t.closest(s);let b;
+if(b=q('[data-go]'))return go(b.dataset.go);
+if(b=q('[data-f]')){flt=+b.dataset.f;return mine()}
+if(b=q('[data-c]')){cat=b.dataset.c;return renderCats()}
+if(b=q('[data-adv]')){const r=R.find(x=>x.id==b.dataset.adv);r.s=r.s<2?r.s+1:0;A.unshift({m:'“'+r.t+'” is now '+ST[r.s].toLowerCase()+'.',at:Date.now()});persist();mine();toast('Status updated to '+ST[r.s].toLowerCase());if(r.s===2)boom('🎉');return}
+if(b=q('[data-del]')){R=R.filter(x=>x.id!=b.dataset.del);persist();mine();return toast('Report deleted')}
+if(b=q('.pin[data-id]')&&q('#bigmap')){const r=R.find(x=>x.id==q('.pin').dataset.id);$('#pinfo').innerHTML=item(r);return}
+if(q('#pm')){const s=$('#pm'),p=s.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=p.matrixTransform(s.getScreenCTM().inverse());pick={x:Math.round(m.x),y:Math.round(m.y)};return renderPick()}
+if(q('#send')){const t=$('#t').value.trim();if(!t)return toast('Add a short title first');if(!pick)return toast('Tap the map to set the location');
+R.unshift({id:nid++,t,c:cat,d:$('#d').value.trim(),s:0,x:pick.x,y:pick.y,at:Date.now()});A.unshift({m:'Report sent: “'+t+'”. It is now pending.',at:Date.now()});persist();pick=null;$('#t').value='';$('#d').value='';toast('Report sent');boom('🚧');return go('mine')}
+if(q('#psave')){P.name=$('#pn').value.trim()||'Citizen';persist();return toast('Name saved')}
+if(q('#reset')){if(confirm('Delete all reports and alerts on this device?')){try{localStorage.clear()}catch(x){}location.reload()}return}
+if(q('#theme')){const d=document.documentElement,dark=getComputedStyle(d).getPropertyValue('--bg').trim()==='#0d1a1d';d.dataset.theme=dark?'light':'dark';save('cp_theme',d.dataset.theme);const v=location.hash.slice(1);if(v==='map'||v==='report')go(v);return}
+if(b=q('#list .card')){b.classList.toggle('open')}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('.pin')){e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
+let spotEl=null;
+function spot(s){if(spotEl)spotEl.classList.remove('spot');spotEl=s?document.querySelector(s):null;if(spotEl)spotEl.classList.add('spot')}
+function boom(e){for(let i=0;i<22;i++){const s=document.createElement('span');s.className='conf';s.textContent=['🎉','✨',e,'🥳','🧹'][i%5];s.style.left=Math.random()*100+'vw';s.style.setProperty('--dx',(Math.random()*160-80)+'px');s.style.setProperty('--r',(Math.random()*720-360)+'deg');s.style.animationDelay=Math.random()*.4+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2600)}}
+const chat=$('#chat'),msgs=$('#msgs'),ci=$('#ci'),mic=$('#mic');let talk=false,tourI=-1,dic=null;
+const QS=[['📍 Report a problem','report a problem'],['🗺️ Show map','show the map'],['📊 Stats','show stats'],['🌙 Dark mode','go dark']];
+const TOUR=[['home','','Hi, I’m Pulsey 🦉 your city sidekick! A 30-second tour, no pop quiz, promise 😄'],
+['home','#nav [data-go=report]','Spot a pothole? 🕳️ Tap Report, pin it on the map and boom 💥 the city knows.'],
+['mine','#nav [data-go=mine]','Mine = your reports. Tap a card to move it along: Pending, In progress, then Resolved 🎉'],
+['map','#nav [data-go=map]','The map 🗺️ shows every issue as a pin. Drag, zoom, stalk potholes responsibly 🕵️'],
+['dash','#nav [data-go=dash]','Stats 📊 show how fast the city is fixing things. Faster with you 🚀'],
+['home','#theme','Eyes tired? 🌙 This flips dark mode. And you can just talk to me: type, or tap the 🎤!']];
+function say(t,u){const d=document.createElement('div');d.className='m'+(u?' u':'');d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;if(!u&&talk&&window.speechSynthesis){try{speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(t.replace(/[^\w\s.,!?'’]/g,'')))}catch(e){}}return d}
+function chips(a){const o=msgs.querySelector('.tq');if(o)o.remove();const d=document.createElement('div');d.className='tq';d.innerHTML=a.map(x=>`<button class="chip" data-q="${x[1]}">${x[0]}</button>`).join('');msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight}
+function openChat(o){chat.classList.toggle('on',o);$('#bot').setAttribute('aria-expanded',o);if(o)ci.focus();else spot(null)}
+function tour(i){tourI=i;if(i>=TOUR.length)return skip('That’s the tour! 🎓 Ask me anything, like “report a pothole”, “show the map” or “go dark”.');const t=TOUR[i];go(t[0]);spot(t[1]);say(t[2]);chips([[i<TOUR.length-1?'Next ➡️':'Finish 🏁','tour'],['Skip tour ⏭️','skip']])}
+function skip(m){tourI=-1;spot(null);save('cp_tour',1);say(m||'Tour skipped ⏭️ I’ll be here if you need me 🦉');chips(QS)}
+function local(t){t=t.toLowerCase();const m=[[/dark|night/,{theme:'dark',reply:'Lights out! 🌙'}],[/light mode|bright|day mode/,{theme:'light',reply:'Sunshine mode ☀️'}],[/\bstats?\b|dashboard|chart|analytic/,{go:'dash',reply:'Numbers incoming 📊'}],[/\bmy\b|track|status|progress/,{go:'mine',reply:'Here are your reports 📋 Tap a card to update it.'}],[/report|pothole|garbage|leak|complain|problem|new issue/,{go:'report',reply:'Let’s report it! 🕳️ Fill the form and tap the map to drop your pin 📍'}],[/map|nearby|pin/,{go:'map',reply:'Map time 🗺️ Tap a pin to peek inside.'}],[/alert|notif|update/,{go:'alerts',reply:'Your alerts 🔔 nothing scary, I hope.'}],[/profile|name|account|point/,{go:'profile',reply:'Your profile 😎'}],[/tour|help|guide|how/,{tour:1,reply:'Tour time! 🎒'}],[/home|back|start/,{go:'home',reply:'Back home 🏠'}]];for(const [re,r] of m)if(re.test(t))return r;return{reply:'Hmm, I only speak civic 🤔 Try “report a problem”, “show map” or “dark mode”.'}}
+function act(r){if(r.theme&&(r.theme==='dark')!==(cv('--bg')==='#0d1a1d'))$('#theme').click();if(r.tour)return tour(0);const v=['home','report','mine','map','dash','alerts','profile'];if(r.go&&v.includes(r.go)){go(r.go);if(r.go==='report'){if(CATS[r.cat]){cat=r.cat;renderCats()}if(r.title)$('#t').value=String(r.title).slice(0,60)}}}
+async function ask(t){t=t.trim();if(!t)return;ci.value='';say(t,1);const o=msgs.querySelector('.tq');if(o)o.remove();let r=local(t);const w=say('🤔');
+try{const s=window.claude&&await claude.use('sample');if(s){const j=await s.json('You are Pulsey, a funny, friendly owl guide inside Civic Pulse, an app where citizens report local problems. Screens: home, report, mine (my reports), map, dash (stats), alerts, profile. Categories: Road, Garbage, Water, Light, Safety, Other. The user has '+R.length+' reports, '+R.filter(x=>x.s===2).length+' resolved. Answer in 1-2 short sentences with 1-3 fun emojis. Reply ONLY with JSON: {"reply":string,"go":screen or null,"theme":"dark"|"light"|null,"cat":category or null,"title":short report title or null}. Set go when they want a screen. If they describe a problem to report, set go to report and fill cat and title. Visitor said: '+JSON.stringify(t),{modelTier:'quick',cache:false});if(j&&j.reply)r=j}}catch(e){}
+w.remove();say(r.reply||'Done! ✅');act(r);if(tourI<0)chips(QS)}
+$('#bot').onclick=()=>openChat(!chat.classList.contains('on'));$('#x').onclick=()=>openChat(0);
+$('#spk').onclick=e=>{talk=!talk;e.currentTarget.textContent=talk?'🔊':'🔇'};$('#go2').onclick=()=>ask(ci.value);ci.onkeydown=e=>{if(e.key==='Enter')ask(ci.value)};
+chat.addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const q=b.dataset.q;q==='tour'?tour(tourI+1):q==='skip'?skip():ask(q)});
+mic.onclick=()=>{if(dic)mic.classList.contains('rec')?dic.stop():dic.start().catch(()=>{})};
+(async()=>{try{if(window.claude)dic=await claude.use('dictation')}catch(e){}if(!dic){mic.hidden=true;return}dic.onPartial(({text})=>{ci.value=text});dic.onFinal(({text})=>{ci.value=text;ask(text)});dic.onState(({state})=>mic.classList.toggle('rec',state==='listening'))})();
+setTimeout(()=>{if(!load('cp_tour',0)){openChat(1);tour(0)}else{say('Welcome back! 🦉 Where to?');chips(QS)}},900);
+const th=load('cp_theme',null);if(th)document.documentElement.dataset.theme=th;
+window.addEventListener('hashchange',()=>go(location.hash.slice(1)||'home'));
+go(location.hash.slice(1)||'home');
 </script>
-
 </body>
 </html>
